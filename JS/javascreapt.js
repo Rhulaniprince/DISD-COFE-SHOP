@@ -1,13 +1,14 @@
 document.addEventListener('DOMContentLoaded', function () {
     highlightCurrentPage();
+    initNavToggle();
     initScrollReveal();
     initBackToTop();
-    initMenuTabs();
+    initMenu();
     initOpenBadge();
     initLightbox(); 
     initAccordion(); 
     initContactForm();
-    initMap();       
+           
 });
 
 /* Mark the current page in the nav */
@@ -57,58 +58,6 @@ function initBackToTop() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 }
-/* Tabs: build a tab bar from the menu headings */
-function initMenuTabs() {
-    var section = document.querySelector('.menu-section');
-    if (!section) return;
-
-    var headings = section.querySelectorAll('.menu-category');
-    if (!headings.length) return;
-
-    var tabBar = document.createElement('div');
-    tabBar.className = 'menu-tabs';
-    tabBar.setAttribute('role', 'tablist');
-
-    var panels = [];
-    var tabs = [];
-
-    headings.forEach(function (heading, index) {
-        var grid = heading.nextElementSibling;
-        var panel = document.createElement('div');
-        panel.className = 'menu-panel';
-        panel.setAttribute('role', 'tabpanel');
-        panel.id = 'menu-panel-' + index;
-
-        // move the heading and its grid into a panel
-        heading.parentNode.insertBefore(panel, heading);
-        panel.appendChild(heading);
-        panel.appendChild(grid);
-        panel.hidden = index !== 0;
-        panels.push(panel);
-
-        var tab = document.createElement('button');
-        tab.className = 'menu-tab' + (index === 0 ? ' active' : '');
-        tab.type = 'button';
-        tab.textContent = heading.textContent;
-        tab.setAttribute('role', 'tab');
-        tab.setAttribute('aria-controls', panel.id);
-        tab.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
-        tabBar.appendChild(tab);
-        tabs.push(tab);
-
-        tab.addEventListener('click', function () {
-            tabs.forEach(function (t, i) {
-                var active = i === index;
-                t.classList.toggle('active', active);
-                t.setAttribute('aria-selected', active ? 'true' : 'false');
-                panels[i].hidden = !active;
-            });
-        });
-    });
-
-    panels[0].parentNode.insertBefore(tabBar, panels[0]);
-}
-
 /* Badge: "We are open now" / "closed" based on your hours */
 function initOpenBadge() {
     var info = document.querySelector('.menu-info');
@@ -121,7 +70,7 @@ function initOpenBadge() {
         6: [8, 17]
     };
 
-    // always use South African time
+    
     var now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Africa/Johannesburg' }));
     var today = hours[now.getDay()];
     var current = now.getHours() + now.getMinutes() / 60;
@@ -139,7 +88,7 @@ function initLightbox() {
 
     var current = 0;
 
-    // build the lightbox once and add it to the page
+    
     var box = document.createElement('div');
     box.className = 'lightbox';
     box.setAttribute('role', 'dialog');
@@ -192,7 +141,7 @@ function initLightbox() {
         if (e.key === 'ArrowRight') show(current + 1);
     });
 }
-/* Accordion: click a question to open its answer */
+/* Accordion*/
 function initAccordion() {
     var items = document.querySelectorAll('.accordion-item');
     if (!items.length) return;   // do nothing on pages without an accordion
@@ -224,7 +173,7 @@ function initAccordion() {
 function showModal(title, message) {
     var overlay = document.getElementById('site-modal');
 
-    // build it once, the first time it's needed
+    
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'site-modal';
@@ -267,7 +216,7 @@ function initContactForm() {
     var commentField = form.querySelector('[name="comment"]');
     var MAX = 500;
 
-    form.setAttribute('novalidate', '');   // use our messages, not the browser's
+    form.setAttribute('novalidate', '');  
     commentField.setAttribute('maxlength', MAX);
 
     // live character counter under the comment box
@@ -336,31 +285,193 @@ function initContactForm() {
     });
 }
 
-/* Interactive map (Leaflet + OpenStreetMap) */
-function initMap() {
-    var mapEl = document.getElementById('map');
-    if (!mapEl) return;
 
-    // Leaflet didn't load (offline, or the script tag is missing)
-    if (typeof L === 'undefined') {
-        mapEl.textContent = 'The map could not be loaded. Please check your internet connection.';
-        return;
+/* ---------- Menu data ---------- */
+var MENU_DATA = [
+    { category: 'coffee', name: 'Cappuccino', price: 30, description: '' },
+    { category: 'coffee', name: 'Caffe Latte', price: 30, description: '' },
+    { category: 'coffee', name: 'Flat White', price: 35, description: '' },
+    { category: 'coffee', name: 'Cortado', price: 25, description: '' },
+    { category: 'coffee', name: 'Caffe Mocha', price: 45, description: '' },
+    { category: 'coffee', name: 'Americano', price: 25, description: '' },
+    { category: 'coffee', name: 'Espresso', price: 25, description: '' },
+    { category: 'coffee', name: 'Hot Chocolate', price: 40, description: '' },
+    { category: 'coffee', name: 'Chai Latte', price: 30, description: '' },
+    { category: 'coffee', name: 'Spanish Latte', price: 60, description: 'Espresso, coconut & condensed milk' },
+
+    { category: 'iced lattes', name: 'Iced Coffee', price: 35, description: 'Long coffee with ice' },
+    { category: 'iced lattes', name: 'Iced Caffe Latte', price: 40, description: 'Espresso & cold milk' },
+    { category: 'iced lattes', name: 'Iced Caffe Mocha', price: 40, description: 'Espresso, chocolate & cream' },
+    { category: 'iced lattes', name: 'Frosted Caramel Latte', price: 45, description: 'Espresso, caramel & cream' },
+
+    { category: 'freezos', name: 'Coffee Freezo', price: 65, description: '' },
+    { category: 'freezos', name: 'Salted Caramel Freezo', price: 65, description: 'Espresso, salted caramel & milk' },
+    { category: 'freezos', name: "S'mores Freezo", price: 70, description: 'Espresso, toasted marshmallow & milk' },
+    { category: 'freezos', name: 'Skinner Freezo', price: 65, description: 'Peach, cream & vanilla' },
+
+    { category: 'tea', name: 'Rooibos/Earl Grey', price: 30, description: '' },
+    { category: 'tea', name: 'Green/Chai/Peppermint', price: 35, description: '' },
+
+    { category: 'soft drinks', name: 'Mountain Falls Still 500ml', price: 35, description: '' },
+    { category: 'soft drinks', name: 'Mountain Falls Sparkling 1l', price: 65, description: '' },
+    { category: 'soft drinks', name: 'San Pellegrino Sodas', price: 55, description: '' },
+    { category: 'soft drinks', name: 'Sir Fruit Fresh Juices', price: 50, description: '' },
+    { category: 'soft drinks', name: 'Boosters', price: 45, description: '' },
+
+    { category: 'breakfast', name: 'Yoghurt & Muesli', price: 65, description: 'Creamy yoghurt, crunchy muesli & fresh berries' },
+    { category: 'breakfast', name: 'Toasted Cheese Bagel', price: 65, description: 'Toasted bagel, melted mozzarella & cheddar cheese' },
+    { category: 'breakfast', name: 'Ham & Cheese Croissant', price: 70, description: 'Flaky croissant, savoury ham & melted cheese' }
+];
+
+/* ---------- Menu: builds the page from MENU_DATA, with search, sort and category filter ---------- */
+function initMenu() {
+    var results = document.getElementById('menu-results');
+    if (!results) return;   // do nothing on other pages
+
+    var searchBox = document.getElementById('menu-search');
+    var sortBox = document.getElementById('menu-sort');
+    var countEl = document.getElementById('menu-count');
+    var tabBar = document.getElementById('menu-tabs');
+    var activeCategory = 'all';
+
+    // work out the category list from the data (keeps the order above)
+    var categories = [];
+    MENU_DATA.forEach(function (item) {
+        if (categories.indexOf(item.category) === -1) categories.push(item.category);
+    });
+
+    // category buttons: "all" plus one per category
+    ['all'].concat(categories).forEach(function (cat) {
+        var tab = document.createElement('button');
+        tab.type = 'button';
+        tab.className = 'menu-tab' + (cat === 'all' ? ' active' : '');
+        tab.textContent = cat;
+        tab.addEventListener('click', function () {
+            activeCategory = cat;
+            tabBar.querySelectorAll('.menu-tab').forEach(function (t) {
+                t.classList.toggle('active', t === tab);
+            });
+            render();
+        });
+        tabBar.appendChild(tab);
+    });
+
+    function render() {
+        var query = searchBox.value.trim().toLowerCase();
+        var sort = sortBox.value;
+
+        // 1. FILTER by category and search text (matches name, description or category)
+        var items = MENU_DATA.filter(function (item) {
+            var inCategory = activeCategory === 'all' || item.category === activeCategory;
+            var text = (item.name + ' ' + item.description + ' ' + item.category).toLowerCase();
+            return inCategory && text.indexOf(query) !== -1;
+        });
+
+        // 2. SORT (filter() made a copy, so MENU_DATA itself is never reordered)
+        if (sort === 'price-asc') items.sort(function (a, b) { return a.price - b.price; });
+        else if (sort === 'price-desc') items.sort(function (a, b) { return b.price - a.price; });
+        else if (sort === 'name') items.sort(function (a, b) { return a.name.localeCompare(b.name); });
+
+        // 3. GROUP: by category normally, or one flat list when sorting across "all"
+        var groups = [];
+        if (sort !== 'default' && activeCategory === 'all') {
+            if (items.length) groups.push({ title: 'all items', items: items });
+        } else {
+            categories.forEach(function (cat) {
+                var inCat = items.filter(function (i) { return i.category === cat; });
+                if (inCat.length) groups.push({ title: cat, items: inCat });
+            });
+        }
+
+        // 4. BUILD the HTML
+        results.innerHTML = '';
+        groups.forEach(function (group) {
+            var heading = document.createElement('h2');
+            heading.className = 'menu-category';
+            heading.textContent = group.title;
+
+            var grid = document.createElement('div');
+            grid.className = 'menu-grid';
+
+            group.items.forEach(function (item) {
+                var card = document.createElement('div');
+                card.className = 'menu-item';
+
+                var h3 = document.createElement('h3');
+                h3.appendChild(document.createTextNode(item.name + ' '));
+                var price = document.createElement('span');
+                price.textContent = 'R' + item.price.toFixed(2);
+                h3.appendChild(price);
+                card.appendChild(h3);
+
+                if (item.description) {
+                    var p = document.createElement('p');
+                    p.textContent = item.description;
+                    card.appendChild(p);
+                }
+                grid.appendChild(card);
+            });
+
+            results.appendChild(heading);
+            results.appendChild(grid);
+        });
+
+        if (!items.length) {
+            var empty = document.createElement('p');
+            empty.className = 'menu-empty';
+            empty.textContent = 'Nothing on the menu matches "' + searchBox.value.trim() + '". Try a different word.';
+            results.appendChild(empty);
+        }
+
+        countEl.textContent = items.length + (items.length === 1 ? ' item' : ' items');
+
+        // replay the fade-in each time the list changes
+        results.style.animation = 'none';
+        void results.offsetWidth;
+        results.style.animation = '';
     }
 
-    var cafe = [-26.1935, 28.0335];   // 70 Juta St, Braamfontein (approximate)
+    searchBox.addEventListener('input', render);    // updates as you type
+    sortBox.addEventListener('change', render);
 
-    var map = L.map('map', { scrollWheelZoom: false }).setView(cafe, 16);
+    render();   // first draw
+}
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+function initNavToggle() {
+    var nav = document.querySelector('nav');
+    var menu = nav && nav.querySelector('.navigations');
+    if (!menu) return;
 
-    L.marker(cafe).addTo(map)
-        .bindPopup('<strong>Skinner Caf&eacute;</strong><br>70 Juta St, Braamfontein<br>Mon&ndash;Fri 7:30AM&ndash;6PM<br>Sat 8AM&ndash;5PM')
-        .openPopup();
+    menu.id = 'site-menu';
 
-    // only zoom with the scroll wheel after clicking the map, so scrolling the page still works
-    map.on('click', function () { map.scrollWheelZoom.enable(); });
-    map.on('mouseout', function () { map.scrollWheelZoom.disable(); });
+    var btn = document.createElement('button');
+    btn.className = 'nav-toggle';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Toggle navigation menu');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'site-menu');
+    btn.innerHTML = '<span></span><span></span><span></span>';
+    nav.insertBefore(btn, menu);   // sits between the logo and the links
+
+    function setOpen(open) {
+        nav.classList.toggle('nav-open', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    btn.addEventListener('click', function () {
+        setOpen(!nav.classList.contains('nav-open'));
+    });
+
+    // tapping anywhere else, or pressing Esc, closes it
+    document.addEventListener('click', function (e) {
+        if (!nav.contains(e.target)) setOpen(false);
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') setOpen(false);
+    });
+
+    // reset when the window grows back to desktop size
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 768) setOpen(false);
+    });
 }
